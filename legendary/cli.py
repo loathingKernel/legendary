@@ -872,7 +872,6 @@ class LegendaryCLI:
         status_queue = MPQueue()
 
         logger.info('Preparing download...')
-        # todo use status queue to print progress from CLI
         # This has become a little ridiculous hasn't it?
         try:
             dlm, analysis, game, igame, repair, repair_file, res = self.core.prepare_download(
@@ -946,26 +945,6 @@ class LegendaryCLI:
                     f'{analysis.unchanged / 1024 / 1024:.02f} MiB (unchanged / skipped)')
         logger.info('Downloads are resumable, you can interrupt the download with '
                     'CTRL-C and resume it using the same command later on.')
-
-        res = self.core.check_installation_conditions(analysis=analysis, install=igame, game=game,
-                                                      updating=self.core.is_installed(args.app_name),
-                                                      ignore_space_req=args.ignore_space)
-
-        if res.warnings or res.failures:
-            print('\nInstallation requirements check returned the following results:')
-
-        if res.warnings:
-            for warn in sorted(res.warnings):
-                print(' - Warning:', warn)
-            if not res.failures:
-                print()
-
-        if res.failures:
-            for msg in sorted(res.failures):
-                print(' ! Failure:', msg)
-            print()
-            logger.fatal('Installation cannot proceed, exiting.')
-            exit(1)
 
         if not args.yes:
             if not get_boolean_choice(f'Do you wish to install "{igame.title}"?'):
@@ -1063,6 +1042,8 @@ class LegendaryCLI:
             self.core.verify_game(app_name=args.app_name, callback=self.output_progress)
         except Exception as e:
             logger.error(e)
+        if print_command:
+            logger.info(f'Run "legendary repair {args.app_name}" to repair your game installation.')
 
     def _handle_postinstall(self, postinstall, igame, yes=False):
         print('\nThis game lists the following prequisites to be installed:')
