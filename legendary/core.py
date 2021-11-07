@@ -1818,8 +1818,9 @@ class LegendaryCore:
         try:
             egl_game = self.egl.get_manifest(app_name=app_name)
         except ValueError:
-            self.log.fatal(f'EGL Manifest for {app_name} could not be loaded, not importing!')
-            return
+            err = f'EGL Manifest for {app_name} could not be loaded, not importing!'
+            self.log.fatal(err)
+            return err
         # convert egl json file
         lgd_igame = egl_game.to_lgd_igame()
 
@@ -1830,9 +1831,9 @@ class LegendaryCore:
             wine_pfx = os.path.realpath(os.path.join(drive_c_path, '..'))
             mapped_path = os.path.realpath(os.path.join(wine_pfx, 'dosdevices', drive_letter))
             if 'dosdevices' in mapped_path:
-                self.log.error(f'Unable to resolve path for mapped drive "{drive_letter}" '
-                               f'for WINE prefix at "{wine_pfx}"')
-                return
+                err = f'Unable to resolve path for mapped drive "{drive_letter}" for WINE prefix at "{wine_pfx}"'
+                self.log.error(err)
+                return err
 
             game_path = lgd_igame.install_path[2:].replace('\\', '/').lstrip('/')
             new_path = os.path.realpath(os.path.join(mapped_path, game_path))
@@ -1842,8 +1843,9 @@ class LegendaryCore:
         # check if manifest exists
         manifest_filename = os.path.join(lgd_igame.install_path, '.egstore', f'{lgd_igame.egl_guid}.manifest')
         if not os.path.exists(manifest_filename):
-            self.log.warning(f'Game Manifest "{manifest_filename}" not found, cannot import!')
-            return
+            err = f'Game Manifest "{manifest_filename}" not found, cannot import!'
+            self.log.warning(err)
+            return err
 
         # load manifest file and copy it over
         with open(manifest_filename, 'rb') as f:
@@ -1859,7 +1861,7 @@ class LegendaryCore:
 
         # mark game as installed
         _ = self._install_game(lgd_igame)
-        return
+        return ""
 
     def egl_export(self, app_name):
         self.log.debug(f'Exporting "{app_name}" to EGL')
@@ -1868,8 +1870,9 @@ class LegendaryCore:
         lgd_igame = self._get_installed_game(app_name)
         manifest_data, _ = self.get_installed_manifest(app_name)
         if not manifest_data:
-            self.log.error(f'Game Manifest for "{app_name}" not found, cannot export!')
-            return
+            err = f'Game Manifest for "{app_name}" not found, cannot export!'
+            self.log.error(err)
+            return err
 
         # create guid if it's not set already
         if not lgd_igame.egl_guid:
