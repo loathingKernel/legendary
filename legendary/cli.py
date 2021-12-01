@@ -5,21 +5,15 @@ import argparse
 import csv
 import datetime
 import json
-import logging
-import os
 import queue
 import shlex
-import subprocess
 import time
 import webbrowser
-
 from collections import defaultdict, namedtuple
 from logging.handlers import QueueListener
 from multiprocessing import freeze_support, Queue as MPQueue
 from platform import platform
 from sys import exit, stdout, platform as sys_platform
-
-from legendary.utils.selective_dl import get_sdl_appname
 
 from legendary import __version__, __codename__
 from legendary.core import LegendaryCore
@@ -821,7 +815,6 @@ class LegendaryCLI:
                 logger.warning(f'No asset found for platform "{args.platform}", '
                                f'trying anyway since --no-install is set.')
 
-
         # check if SDL should be disabled
         sdl_enabled = not args.install_tag and not game.is_dlc
         config_tags = self.core.lgd.config.get(game.app_name, 'install_tags', fallback=None)
@@ -887,7 +880,7 @@ class LegendaryCLI:
                 override_manifest=args.override_manifest,
                 override_old_manifest=args.override_old_manifest,
                 override_base_url=args.override_base_url,
-                                                          platform=args.platform,
+                platform=args.platform,
                 file_prefix_filter=args.file_prefix,
                 file_exclude_filter=args.file_exclude_prefix,
                 file_install_tag=args.install_tag,
