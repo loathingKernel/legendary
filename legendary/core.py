@@ -3,6 +3,7 @@
 import json
 import shlex
 import shutil
+import time
 from base64 import b64decode
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
@@ -2032,7 +2033,7 @@ class LegendaryCore:
 
         return found
 
-    def prepare_overlay_install(self, path=None):
+    def prepare_overlay_install(self, path=None, status_queue=None):
         # start anoymous session for update check if we're not logged in yet
         if not self.logged_in:
             self.egs.start_session(client_credentials=True)
@@ -2045,7 +2046,7 @@ class LegendaryCore:
         else:
             path = path or os.path.join(self.get_default_install_dir(), '.overlay')
 
-        dlm = DLManager(path, base_urls[0])
+        dlm = DLManager(path, base_urls[0], status_q=status_queue)
         analysis_result = dlm.run_analysis(manifest=manifest)
 
         install_size = analysis_result.install_size
@@ -2056,6 +2057,7 @@ class LegendaryCore:
         parent_dir = path
         while not os.path.exists(parent_dir):
             parent_dir, _ = os.path.split(parent_dir)
+            time.sleep(0.5)
 
         _, _, free = shutil.disk_usage(parent_dir)
         if free < install_size:

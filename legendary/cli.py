@@ -2175,7 +2175,10 @@ class LegendaryCLI:
                 logger.error(f'Overlay not installed, nothing to update.')
                 return
             logger.info('Preparing to start overlay install...')
-            dlm, ares, igame = self.core.prepare_overlay_install(args.path)
+
+            status_queue = MPQueue()
+
+            dlm, ares, igame = self.core.prepare_overlay_install(args.path, status_queue=status_queue)
 
             if old_install := self.core.lgd.get_overlay_install_info():
                 if old_install.version == igame.version:
@@ -2195,7 +2198,26 @@ class LegendaryCLI:
                 # set up logging stuff (should be moved somewhere else later)
                 dlm.logging_queue = self.logging_queue
                 dlm.start()
+                time.sleep(1)
+
+                while dlm.is_alive():
+                    try:
+                        status = status_queue.get(timeout=0.1)
+                        logger.info(
+                            f'= Progress: {status.progress:.02f}% ({status.processed_chunks}/{status.chunk_tasks}), '
+                            f'Running for {str(datetime.timedelta(seconds=status.runtime))}, '
+                            f'ETA: {str(datetime.timedelta(seconds=status.estimated_time_left))}')
+                        logger.info(f' - Downloaded: {status.total_downloaded / 1024 / 1024:.02f} MiB, '
+                                    f'Written: {status.total_written / 1024 / 1024:.02f} MiB')
+                        logger.info(f' - Cache usage: {status.cache_usage} MiB, active tasks: {status.active_tasks}')
+                        logger.info(f' + Download\t- {status.download_speed / 1024 / 1024:.02f} MiB/s (raw) '
+                                    f'/ {status.download_decompressed_speed / 1024 / 1024:.02f} MiB/s (decompressed)')
+                        logger.info(f' + Disk\t- {status.write_speed / 1024 / 1024:.02f} MiB/s (write) / '
+                                    f'{status.read_speed / 1024 / 1024:.02f} MiB/s (read)')
+                    except queue.Empty:
+                        pass
                 dlm.join()
+
             except Exception as e:
                 logger.error(f'The following exception occurred while waiting for the downloader to finish: {e!r}. '
                              f'Try restarting the process, if it continues to fail please open an issue on GitHub.')
