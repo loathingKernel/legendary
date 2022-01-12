@@ -2178,7 +2178,10 @@ class LegendaryCLI:
 
             status_queue = MPQueue()
 
-            dlm, ares, igame = self.core.prepare_overlay_install(args.path, status_queue=status_queue)
+            dlm, ares, igame = self.core.prepare_overlay_install(args.path, status_queue=status_queue,
+                                                                 max_workers=args.max_workers,
+                                                                 max_shared_memory=args.shared_memory,
+                                                                 force=args.force)
 
             if old_install := self.core.lgd.get_overlay_install_info():
                 if old_install.version == igame.version:
@@ -2825,6 +2828,12 @@ def main():
                                     metavar='<install|update|remove|enable|disable|info>')
     eos_overlay_parser.add_argument('--path', dest='path', action='store',
                                     help='Path to the EOS overlay folder to be enabled/installed to.')
+    eos_overlay_parser.add_argument('--max-shared-memory', dest='shared_memory', action='store', metavar='<size>',
+                                    type=int, default=1024**3, help='Maximum amount of shared memory to use (in MiB), default: 1 GiB')
+    eos_overlay_parser.add_argument('--max-workers', dest='max_workers', action='store', metavar='<num>', default=0,
+                                    type=int, help='Maximum amount of download workers, default: min(2 * CPUs, 16)')
+    eos_overlay_parser.add_argument('--force', dest='force', action='store_true',
+                                    help='Download all files / ignore existing (overwrite)')
 
     if os.name != 'nt':
         eos_overlay_parser.add_argument('--prefix', dest='prefix', action='store',

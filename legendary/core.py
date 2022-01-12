@@ -2033,7 +2033,8 @@ class LegendaryCore:
 
         return found
 
-    def prepare_overlay_install(self, path=None, status_queue=None):
+    def prepare_overlay_install(self, path=None, status_queue=None, max_workers=0, update_interval=1.0, dl_timeout=10,
+                                max_shared_memory=1024 ** 3, force: bool = False):
         # start anoymous session for update check if we're not logged in yet
         if not self.logged_in:
             self.egs.start_session(client_credentials=True)
@@ -2046,7 +2047,16 @@ class LegendaryCore:
         else:
             path = path or os.path.join(self.get_default_install_dir(), '.overlay')
 
-        dlm = DLManager(path, base_urls[0], status_q=status_queue)
+        if not force:
+            filename = clean_filename('overlay.resume')
+            resume_file = os.path.join(self.lgd.get_tmp_path(), filename)
+        else:
+            resume_file = None
+
+        dlm = DLManager(path, base_urls[0], status_q=status_queue,
+                        max_workers=max_workers, update_interval=update_interval,
+                        dl_timeout=dl_timeout, max_shared_memory=max_shared_memory,
+                        resume_file=resume_file)
         analysis_result = dlm.run_analysis(manifest=manifest)
 
         install_size = analysis_result.install_size
