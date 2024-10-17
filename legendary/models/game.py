@@ -237,6 +237,7 @@ class InstalledGame:
     requires_ot: bool = False
     save_path: Optional[str] = None
     is_preloaded: bool = False
+    save_timestamp: Optional[float] = None
 
     @classmethod
     def from_json(cls, json):
@@ -257,6 +258,7 @@ class InstalledGame:
         tmp.requires_ot = json.get('requires_ot', False)
         tmp.is_dlc = json.get('is_dlc', False)
         tmp.save_path = json.get('save_path', None)
+        tmp.save_timestamp = json.get('save_timestamp', None)
         tmp.manifest_path = json.get('manifest_path', '')
         tmp.needs_verification = json.get('needs_verification', False) is True
         tmp.platform = json.get('platform', 'Windows')
@@ -283,6 +285,7 @@ class SaveGameStatus(Enum):
     REMOTE_NEWER = 1
     SAME_AGE = 2
     NO_SAVE = 3
+    CONFLICT = 4
 
 
 class VerifyResult(Enum):
