@@ -313,4 +313,6 @@ class FileWorker(Process):
                 logger.warning('Immediate exit requested, quitting...')
                 if current_file:
                     current_file.close()
-                return
+                break
+
+        self.shm.close()
