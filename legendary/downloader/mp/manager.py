@@ -680,6 +680,10 @@ class DLManager(Process):
                     q.close()
                     q.join_thread()
 
+            self.shared_memory.close()
+            self.shared_memory.unlink()
+            self.shared_memory = None
+
     def run_real(self):
         self.shared_memory = SharedMemory(create=True, size=self.max_shared_memory)
         self.log.debug(f'Created shared memory of size: {self.shared_memory.size / 1024 / 1024:.02f} MiB')
